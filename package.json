@@ -1,0 +1,24 @@
+{
+  "name": "twitter-on-telegram",
+  "version": "1.0.0",
+  "description": "A bot for viewing Twitter feed on Telegram",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mseltahir/twitter-on-telegram.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mseltahir/twitter-on-telegram/issues"
+  },
+  "homepage": "https://github.com/mseltahir/twitter-on-telegram#readme",
+  "dependencies": {
+    "axios": "^0.26.1",
+    "dotenv": "^16.0.0"
+  }
+}
