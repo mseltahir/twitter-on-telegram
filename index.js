@@ -6,13 +6,29 @@ const bot = new TeleBot(process.env.BOT_TOKEN);
 
 const data = [
     {
-        userID: process.env.MY_ID,
+        userID: parseInt(process.env.MY_ID),
         currentCommand: null,
         following: [],
     },
 ];
 
+const findUser = (id) => {
+    const index = data.findIndex((user) => user.userID === id);
+    return {
+        found: index === -1 ? false : true,
+        index: index,
+    };
+};
+
 bot.on("/start", (msg) => {
+    const check = findUser(msg.from.id);
+    if (!check.found) {
+        data.push({
+            userID: msg.from.id,
+            currentCommand: null,
+            following: [],
+        });
+    }
     msg.reply.text(`Hello ${msg.from.first_name}!\n
 Choose a command to do one of the following:\n
 /list - to list all the accounts you currently follow
