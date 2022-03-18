@@ -1,4 +1,3 @@
-const axios = require("axios").default;
 const TeleBot = require("telebot");
 require("dotenv").config();
 
@@ -28,6 +27,7 @@ const addUser = (id, ...rest) => {
         following: [],
     });
 };
+
 bot.on("/start", (msg) => {
     const check = findUser(msg.from.id);
     if (!check.found) {
