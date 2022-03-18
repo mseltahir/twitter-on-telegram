@@ -1,5 +1,13 @@
+const { default: mongoose } = require("mongoose");
 const TeleBot = require("telebot");
+
+const UserHelper = require("./helpers/user.h");
 require("dotenv").config();
+
+mongoose
+    .connect(process.env.MONGODB_URI)
+    .then(() => console.log("Connected to database..."))
+    .catch((err) => console.error(err));
 
 const bot = new TeleBot(process.env.BOT_TOKEN);
 
@@ -20,7 +28,6 @@ const findUser = (id) => {
 };
 
 const addUser = (id, ...rest) => {
-    console.log(rest);
     data.push({
         userID: id,
         currentCommand: rest.length ? rest[0] : "None",
@@ -28,12 +35,11 @@ const addUser = (id, ...rest) => {
     });
 };
 
-bot.on("/start", (msg) => {
-    const check = findUser(msg.from.id);
-    if (!check.found) {
-        addUser(msg.from.id, "None");
-    }
-    console.log(data);
+bot.on("/start", async (msg) => {
+    const user = await UserHelper.addUser(msg.from);
+    console.log(user);
+    const fuser = await UserHelper.findUser(msg.from.id);
+    console.log(fuser);
     msg.reply.text(`Hello ${msg.from.first_name}!\n
 Choose a command to do one of the following:\n
 /list - to list all the accounts you currently follow
