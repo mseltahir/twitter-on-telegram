@@ -78,14 +78,26 @@ bot.on("text", async (msg) => {
 bot.on(/^@/, async (msg) => {
     const checkUser = await UserHelper.find(msg.from.id);
     const user = checkUser.user;
+
+    const handle = msg.text.substring(1);
+    const idx = user.following.findIndex((h) => h === handle);
+
     if (user.currentCommand === "follow") {
-        msg.reply.text(`Followed ${msg.text}`);
+        msg.reply.text(`Followed @${handle}`);
         // follow
+        if (idx === -1) {
+            user.following.push(handle);
+        }
         user.currentCommand = "None";
         await user.save();
     } else if (user.currentCommand === "unfollow") {
-        msg.reply.text(`Unfollowed ${msg.text}`);
         // unfollow
+        if (idx !== -1) {
+            user.following.splice(idx, 1);
+            msg.reply.text(`Unfollowed @${handle}`);
+        } else {
+            msg.reply.text(`@${handle} is not in your following list`);
+        }
         user.currentCommand = "None";
         await user.save();
     } else {
