@@ -1,6 +1,6 @@
 const User = require("../models/User");
 
-const addUser = async (user) => {
+const add = async (user) => {
     try {
         return await User.create({
             _id: user.id,
@@ -15,7 +15,7 @@ const addUser = async (user) => {
     }
 };
 
-const findUser = async (id) => {
+const find = async (id) => {
     const user = await User.findById(id);
     return {
         found: user ? true : false,
@@ -23,4 +23,4 @@ const findUser = async (id) => {
     };
 };
 
-module.exports = { addUser, findUser };
+module.exports = { add, find };

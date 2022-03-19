@@ -36,10 +36,10 @@ const addUser = (id, ...rest) => {
 };
 
 bot.on("/start", async (msg) => {
-    const user = await UserHelper.addUser(msg.from);
-    console.log(user);
-    const fuser = await UserHelper.findUser(msg.from.id);
-    console.log(fuser);
+    const checkUser = await UserHelper.find(msg.from.id);
+    if (!checkUser.found) {
+        const user = await UserHelper.add(msg.from);
+    }
     msg.reply.text(`Hello ${msg.from.first_name}!\n
 Choose a command to do one of the following:\n
 /list - to list all the accounts you currently follow
