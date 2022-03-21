@@ -1,4 +1,5 @@
 const { TwitterApi } = require("twitter-api-v2");
+const TwitterUser = require("../models/TwitterUser");
 require("dotenv").config();
 
 const client = new TwitterApi(process.env.BEARER_TOKEN);
@@ -16,13 +17,27 @@ async function findTwitterUser(username) {
             data: null,
         };
     } else {
+        let ret = user.data[0];
+        const userTweets = await client.v2.userTimeline(user.data[0].id, {
+            exclude: "replies",
+        });
+        try {
+            ret.lastTweet = userTweets.tweets[0];
+        } catch (err) {
+            console.log(err);
+            ret.lastTweet = "None";
+        }
         return {
             found: true,
-            data: user.data[0],
+            data: ret,
         };
     }
 }
 
+async function disarr() {
+    const tusers = await TwitterUser.find();
+    console.log(tusers);
+}
 // (async function () {
 //     const nodejsTweets = await client.v2.userTimeline("91985735");
 //     console.log(nodejsTweets.tweets);
@@ -38,4 +53,5 @@ async function findTwitterUser(username) {
 
 module.exports = {
     findTwitterUser,
+    disarr,
 };
