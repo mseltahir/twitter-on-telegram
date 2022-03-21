@@ -8,7 +8,6 @@ const client = new TwitterApi(process.env.BEARER_TOKEN);
 // twitter id of the user to be saved in the database this funciton will
 // receive the username and save it with the retrieved id and returns
 // true if the request was successful or false if the request was not
-
 async function findTwitterUser(username) {
     const user = await client.v2.usersByUsernames(username);
     if (user.errors) {
@@ -34,24 +33,26 @@ async function findTwitterUser(username) {
     }
 }
 
-async function disarr() {
-    const tusers = await TwitterUser.find();
-    console.log(tusers);
+async function fetchTweets() {
+    const ret = {};
+    const accounts = await TwitterUser.find();
+    for (let account of accounts) {
+        ret[account._id] = [];
+        let tweets = await client.v2.userTimeline(account._id);
+        tweets = tweets.data.data;
+        for (let tweet of tweets) {
+            if (tweet.id === account.lastTweet) {
+                account.lastTweet = tweets[0].id;
+                await account.save();
+                break;
+            }
+            ret[account._id].unshift(tweet);
+        }
+    }
+    return ret;
 }
-// (async function () {
-//     const nodejsTweets = await client.v2.userTimeline("91985735");
-//     console.log(nodejsTweets.tweets);
-//     console.log(
-//         "--------------------------------------------------------------------------------------"
-//     );
-//     await nodejsTweets.fetchNext();
-//     console.log(nodejsTweets.tweets);
-//     // for (let tweet of nodejsTweets) {
-//     //     console.log(tweet.text);
-//     // }
-// })();
 
 module.exports = {
     findTwitterUser,
-    disarr,
+    fetchTweets,
 };
