@@ -1,8 +1,6 @@
 const { fetchTweets } = require("../helpers/twitter.h");
 const User = require("../models/User");
 
-require("dotenv").config();
-
 async function update(bot) {
     const tweets = await fetchTweets();
     console.log(tweets);
