@@ -41,7 +41,7 @@ async function fetchTweets() {
         let tweets = await client.v2.userTimeline(account._id, {
             exclude: "replies",
         });
-        tweets = tweets.data.data;
+        tweets = tweets.tweets;
         for (let tweet of tweets) {
             if (tweet.id === account.lastTweet) {
                 account.lastTweet = tweets[0].id;
