@@ -6,6 +6,7 @@ const TwitterUserHelper = require("./helpers/twitteruser.h");
 const { findTwitterUser } = require("./helpers/twitter.h");
 const TwitterUser = require("./models/TwitterUser");
 const User = require("./models/User");
+const update = require("./core/update");
 require("dotenv").config();
 
 mongoose
@@ -178,3 +179,9 @@ bot.on(/^@/, async (msg) => {
 });
 
 bot.start();
+let i = 0;
+setInterval(() => {
+    update(bot);
+    console.log(`${i}: updated`);
+    i++;
+}, 30000);
