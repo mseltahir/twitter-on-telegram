@@ -2,12 +2,17 @@ const TwitterUser = require("../models/TwitterUser");
 
 const add = async (tuser) => {
     try {
-        return await TwitterUser.create({
-            _id: tuser.id,
-            username: tuser.username,
-            name: tuser.name,
-            lastTweet: tuser.lastTweet.id,
-        });
+        const checkTwitterUser = await find(tuser.id);
+        if (!checkTwitterUser.found) {
+            return await TwitterUser.create({
+                _id: tuser.id,
+                username: tuser.username,
+                name: tuser.name,
+                lastTweet: tuser.lastTweet.id,
+            });
+        } else {
+            return checkTwitterUser.user;
+        }
     } catch (err) {
         console.log(err.message);
     }
