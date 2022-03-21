@@ -2,7 +2,9 @@ const { default: mongoose } = require("mongoose");
 const TeleBot = require("telebot");
 
 const UserHelper = require("./helpers/user.h");
-const { findTwitterUser } = require("./helpers/twitter.h");
+const TwitterUserHelper = require("./helpers/twitteruser.h");
+const { findTwitterUser, disarr } = require("./helpers/twitter.h");
+const TwitterUser = require("./models/TwitterUser");
 require("dotenv").config();
 
 mongoose
@@ -13,10 +15,7 @@ mongoose
 const bot = new TeleBot(process.env.BOT_TOKEN);
 
 bot.on(["/start", "/help"], async (msg) => {
-    const checkUser = await UserHelper.find(msg.from.id);
-    if (!checkUser.found) {
-        const user = await UserHelper.add(msg.from);
-    }
+    const user = await UserHelper.add(msg.from);
     msg.reply.text(`Hello ${msg.from.first_name}!\n
 Choose a command to do one of the following:\n
 /list - to list all the accounts you currently follow
@@ -81,20 +80,26 @@ bot.on(/^@/, async (msg) => {
     const user = checkUser.user;
 
     const handle = msg.text.substring(1);
-    const idx = user.following.findIndex((h) => h.username === handle);
+    const twitterUser = await findTwitterUser(handle);
+    if (!twitterUser.found) {
+        msg.reply.text(
+            `There is no Twitter user with this username (@${handle})`
+        );
+        user.currentCommand = "None";
+        await user.save();
+        return;
+    }
+    const idx = user.following.findIndex((id) => id === twitterUser.data.id);
 
     if (user.currentCommand === "follow") {
         // follow
         if (idx === -1) {
-            const twitterUser = await findTwitterUser(handle);
-            if (twitterUser.found) {
-                user.following.push(twitterUser.data);
-                msg.reply.text(`Followed @${handle}`);
-            } else {
-                msg.reply.text(
-                    `There is no Twitter user with this username (@${handle})`
-                );
-            }
+            user.following.push(twitterUser.data.id);
+            await TwitterUserHelper.add(twitterUser.data);
+            await disarr();
+            msg.reply.text(`Followed @${handle}`);
+        } else {
+            msg.reply.text(`@${handle} is already followed`);
         }
         user.currentCommand = "None";
         await user.save();
