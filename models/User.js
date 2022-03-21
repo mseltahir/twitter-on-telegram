@@ -1,11 +1,5 @@
 const { default: mongoose } = require("mongoose");
-require("dotenv").config();
-
-const twitterUser = mongoose.Schema({
-    id: String,
-    username: String,
-    name: String,
-});
+const TwitterUser = require("./TwitterUser");
 
 const userSchema = mongoose.Schema({
     _id: Number,
@@ -13,7 +7,12 @@ const userSchema = mongoose.Schema({
     firstName: String,
     lastName: String,
     currentCommand: String,
-    following: [twitterUser],
+    following: [
+        {
+            type: String,
+            ref: "TwitterUser",
+        },
+    ],
 });
 
 const User = mongoose.model("User", userSchema);
