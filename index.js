@@ -3,7 +3,7 @@ const TeleBot = require("telebot");
 
 const UserHelper = require("./helpers/user.h");
 const TwitterUserHelper = require("./helpers/twitteruser.h");
-const { findTwitterUser, disarr } = require("./helpers/twitter.h");
+const { findTwitterUser } = require("./helpers/twitter.h");
 const TwitterUser = require("./models/TwitterUser");
 const User = require("./models/User");
 require("dotenv").config();
@@ -17,11 +17,15 @@ const bot = new TeleBot(process.env.BOT_TOKEN);
 
 bot.on(["/start", "/help"], async (msg) => {
     const user = await UserHelper.add(msg.from);
-    msg.reply.text(`Hello ${msg.from.first_name}!\n
+    bot.sendMessage(
+        msg.from.id,
+        `<b>Hello there!</b>\n
 Choose a command to do one of the following:\n
-/list - to list all the accounts you currently follow
-/follow - to follow an account
-/unfollow - to unfollow an account`);
+/list - list the accounts you currently follow
+/follow - follow an account
+/unfollow - unfollow an account`,
+        { parseMode: "HTML" }
+    );
 });
 
 bot.on("/follow", async (msg) => {
@@ -29,7 +33,11 @@ bot.on("/follow", async (msg) => {
     const user = checkUser.user;
     user.currentCommand = "follow";
     await user.save();
-    msg.reply.text("Enter Twitter handle below (must start with @):");
+    bot.sendMessage(
+        msg.from.id,
+        "Enter Twitter handle below\n(<u><b>must start with @</b></u>)",
+        { parseMode: "HTML" }
+    );
 });
 
 bot.on("/unfollow", async (msg) => {
@@ -37,7 +45,11 @@ bot.on("/unfollow", async (msg) => {
     const user = checkUser.user;
     user.currentCommand = "unfollow";
     await user.save();
-    msg.reply.text("Enter Twitter handle below (must start with @)");
+    bot.sendMessage(
+        msg.from.id,
+        "Enter Twitter handle below\n(<u><b>must start with @</b></u>)",
+        { parseMode: "HTML" }
+    );
 });
 
 bot.on("/list", async (msg) => {
@@ -78,12 +90,16 @@ bot.on("text", async (msg) => {
             user.currentCommand === "unfollow"
         ) {
             if (msg.text[0] !== "@") {
-                msg.reply.text("Username (handle) must start with @");
+                bot.sendMessage(
+                    msg.from.id,
+                    "Username (handle) <u><b>must start with @</b></u>",
+                    { parseMode: "HTML" }
+                );
                 return;
             }
         }
     }
-    msg.reply.text("Use available commands only.");
+    bot.sendMessage(msg.from.id, "Use available commands only.");
 });
 
 bot.on(/^@/, async (msg) => {
@@ -93,8 +109,10 @@ bot.on(/^@/, async (msg) => {
     const handle = msg.text.substring(1);
     const twitterUser = await findTwitterUser(handle);
     if (!twitterUser.found) {
-        msg.reply.text(
-            `There is no Twitter user with this username (@${handle})`
+        bot.sendMessage(
+            msg.from.id,
+            `There is no Twitter account with this username (<b>${handle}</b>) ❌\n\nMake sure you're spelling it correctly.`,
+            { parseMode: "HTML" }
         );
         user.currentCommand = "None";
         await user.save();
@@ -107,10 +125,23 @@ bot.on(/^@/, async (msg) => {
         if (idx === -1) {
             user.following.push(twitterUser.data.id);
             await TwitterUserHelper.add(twitterUser.data);
-            await disarr();
-            msg.reply.text(`Followed @${handle}`);
+            bot.sendMessage(
+                msg.from.id,
+                `Followed <a href="https://twitter.com/${handle}">@${handle}</a> ✅`,
+                {
+                    parseMode: "HTML",
+                    webPreview: false,
+                }
+            ).catch((err) => console.error(err));
         } else {
-            msg.reply.text(`@${handle} is already followed`);
+            bot.sendMessage(
+                msg.from.id,
+                `<a href="https://twitter.com/${handle}">@${handle}</a> is already followed`,
+                {
+                    parseMode: "HTML",
+                    webPreview: false,
+                }
+            );
         }
         user.currentCommand = "None";
         await user.save();
@@ -118,14 +149,31 @@ bot.on(/^@/, async (msg) => {
         // unfollow
         if (idx !== -1) {
             user.following.splice(idx, 1);
-            msg.reply.text(`Unfollowed @${handle}`);
+            bot.sendMessage(
+                msg.from.id,
+                `Unfollowed <a href="https://twitter.com/${handle}">@${handle}</a> ✅`,
+                {
+                    parseMode: "HTML",
+                    webPreview: false,
+                }
+            );
         } else {
-            msg.reply.text(`@${handle} is not in your following list`);
+            bot.sendMessage(
+                msg.from.id,
+                `<a href="https://twitter.com/${handle}">@${handle}</a> is not in your following list`,
+                {
+                    parseMode: "HTML",
+                    webPreview: false,
+                }
+            );
         }
         user.currentCommand = "None";
         await user.save();
     } else {
-        msg.reply.text("Use a valid command before entering a username.");
+        bot.sendMessage(
+            msg.from.id,
+            "Use a valid command before entering a username."
+        );
     }
 });
 
