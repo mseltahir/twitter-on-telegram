@@ -92,7 +92,7 @@ bot.on(/^@/, async (msg) => {
                 msg.reply.text(`Followed @${handle}`);
             } else {
                 msg.reply.text(
-                    `There is no twitter user with this username (@${handle})`
+                    `There is no Twitter user with this username (@${handle})`
                 );
             }
         }
