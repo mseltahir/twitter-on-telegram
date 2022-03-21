@@ -38,7 +38,9 @@ async function fetchTweets() {
     const accounts = await TwitterUser.find();
     for (let account of accounts) {
         ret[account._id] = [];
-        let tweets = await client.v2.userTimeline(account._id);
+        let tweets = await client.v2.userTimeline(account._id, {
+            exclude: "replies",
+        });
         tweets = tweets.data.data;
         for (let tweet of tweets) {
             if (tweet.id === account.lastTweet) {
