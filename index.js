@@ -80,13 +80,13 @@ bot.on(/^@/, async (msg) => {
     const user = checkUser.user;
 
     const handle = msg.text.substring(1);
-    const idx = user.following.findIndex((h) => h === handle);
+    const idx = user.following.findIndex((h) => h.handle === handle);
 
     if (user.currentCommand === "follow") {
         msg.reply.text(`Followed @${handle}`);
         // follow
         if (idx === -1) {
-            user.following.push(handle);
+            user.following.push({ handle: handle, id: "123456" });
         }
         user.currentCommand = "None";
         await user.save();
