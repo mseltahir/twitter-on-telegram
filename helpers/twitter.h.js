@@ -35,3 +35,7 @@ async function findTwitterUser(username) {
 //     //     console.log(tweet.text);
 //     // }
 // })();
+
+module.exports = {
+    findTwitterUser,
+};

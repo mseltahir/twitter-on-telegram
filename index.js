@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const TeleBot = require("telebot");
 
 const UserHelper = require("./helpers/user.h");
+const { findTwitterUser } = require("./helpers/twitter.h");
 require("dotenv").config();
 
 mongoose
@@ -80,13 +81,20 @@ bot.on(/^@/, async (msg) => {
     const user = checkUser.user;
 
     const handle = msg.text.substring(1);
-    const idx = user.following.findIndex((h) => h.handle === handle);
+    const idx = user.following.findIndex((h) => h.username === handle);
 
     if (user.currentCommand === "follow") {
-        msg.reply.text(`Followed @${handle}`);
         // follow
         if (idx === -1) {
-            user.following.push({ handle: handle, id: "123456" });
+            const twitterUser = await findTwitterUser(handle);
+            if (twitterUser.found) {
+                user.following.push(twitterUser.data);
+                msg.reply.text(`Followed @${handle}`);
+            } else {
+                msg.reply.text(
+                    `There is no twitter user with this username (@${handle})`
+                );
+            }
         }
         user.currentCommand = "None";
         await user.save();
