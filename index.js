@@ -5,6 +5,7 @@ const UserHelper = require("./helpers/user.h");
 const TwitterUserHelper = require("./helpers/twitteruser.h");
 const { findTwitterUser, disarr } = require("./helpers/twitter.h");
 const TwitterUser = require("./models/TwitterUser");
+const User = require("./models/User");
 require("dotenv").config();
 
 mongoose
@@ -36,14 +37,24 @@ bot.on("/unfollow", async (msg) => {
     const user = checkUser.user;
     user.currentCommand = "unfollow";
     await user.save();
-    msg.reply.text("Enter Twitter handle below (must start with @):");
+    msg.reply.text("Enter Twitter handle below (must start with @)");
 });
 
 bot.on("/list", async (msg) => {
     try {
-        const checkUser = await UserHelper.find(msg.from.id);
-        const user = checkUser.user;
-        msg.reply.text(`List of the accounts you're following:`);
+        let text = "<i>List of the accounts you're following</i>\n\n";
+        const user = await User.findById(msg.from.id);
+        await user.populate("following");
+        if (user.following.length === 0) {
+            text += `<b>None</b>`;
+        }
+        for (let tu of user.following) {
+            text += `- <b>${tu.name}</b> (<a href="https://twitter.com/${tu.username}">@${tu.username}</a>)\n`;
+        }
+        bot.sendMessage(msg.from.id, text, {
+            parseMode: "HTML",
+            webPreview: false,
+        }).catch((err) => console.error(err));
     } catch (err) {
         console.error(err);
     }
