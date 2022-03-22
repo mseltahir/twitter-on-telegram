@@ -8,7 +8,7 @@ const client = new TwitterApi(process.env.BEARER_TOKEN);
 // twitter id of the user to be saved in the database this funciton will
 // receive the username and save it with the retrieved id and returns
 // true if the request was successful or false if the request was not
-async function findTwitterUser(username) {
+const findTwitterUser = async (username) => {
     const user = await client.v2.usersByUsernames(username);
     if (user.errors) {
         return {
@@ -31,9 +31,9 @@ async function findTwitterUser(username) {
             data: ret,
         };
     }
-}
+};
 
-async function fetchTweets() {
+const fetchTweets = async () => {
     const ret = {};
     const accounts = await TwitterUser.find();
     for (let account of accounts) {
@@ -41,18 +41,28 @@ async function fetchTweets() {
         let tweets = await client.v2.userTimeline(account._id, {
             exclude: "replies",
         });
+        await tweets.fetchNext();
+        await tweets.fetchNext();
+        await tweets.fetchNext();
         tweets = tweets.tweets;
+        let found = false;
         for (let tweet of tweets) {
             if (tweet.id === account.lastTweet) {
+                found = true;
                 account.lastTweet = tweets[0].id;
                 await account.save();
                 break;
             }
             ret[account._id].unshift(tweet);
         }
+        // TODO fix the case of long downtime
+        if (!found) {
+            account.lastTweet = tweets[0].id;
+            await account.save();
+        }
     }
     return ret;
-}
+};
 
 module.exports = {
     findTwitterUser,
