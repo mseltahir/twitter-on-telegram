@@ -37,12 +37,13 @@ const findTwitterUser = async (username) => {
 const fetchTweets = async () => {
     const ret = {};
     const accounts = await TwitterUser.find();
-    console.log(`[fetchTweets] TwitterUserList: ${accounts}`);
+    // console.log(`[fetchTweets] TwitterUserList: ${accounts}`);
     for (let account of accounts) {
         ret[account._id] = [];
         let tweets = await client.v2.userTimeline(account._id, {
             exclude: "replies",
         });
+        console.log(tweets);
         tweets = tweets.tweets;
         let found = 1;
         for (let tweet of tweets) {
@@ -61,6 +62,7 @@ const fetchTweets = async () => {
             await account.save();
         }
     }
+    // console.log(`[ret]:\n${JSON.stringify(ret, null, 4)}`);
     return ret;
 };
 

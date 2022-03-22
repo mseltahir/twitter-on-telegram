@@ -208,13 +208,13 @@ bot.on(/^@/, async (msg) => {
 
 bot.start();
 
-// let i = 0;
-// setInterval(async () => {
-//     try {
-//         await update(bot);
-// console.log(`${i}: updated`);
-//         i++;
-//     } catch (err) {
-//         console.log("[ERROR] ", err);
-//     }
-// }, 10000);
+let i = 0;
+setInterval(async () => {
+    try {
+        await update(bot);
+        console.log(`${i}: updated`);
+        i++;
+    } catch (err) {
+        console.log("[ERROR] ", err);
+    }
+}, 300000);
