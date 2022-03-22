@@ -12,7 +12,7 @@ require("dotenv").config();
 mongoose
     .connect(process.env.MONGODB_URI)
     .then(() => console.log("Connected to database..."))
-    .catch((err) => console.error(err));
+    .catch((err) => console.log("[Connecting to database ERROR] ", err));
 
 const URL = "https://twitter.com";
 const COMMANDS = ["/start", "/follow", "/unfollow", "/list", "/help"];
@@ -59,19 +59,25 @@ bot.on("/list", async (msg) => {
     try {
         let text = "<i>List of the accounts you're following</i>\n\n";
         const user = await User.findById(msg.from.id);
+        // console.log(`[bot.on /list logging user]: ${user}`);
         await user.populate("following");
+        // console.log(`[bot.on /list logging user]: ${user}`);
         if (user.following.length === 0) {
             text += `<b>None</b>`;
-        }
-        for (let tu of user.following) {
-            text += `- <b>${tu.name}</b> (<a href="${URL}/${tu.username}">@${tu.username}</a>)\n`;
+        } else {
+            for (let tu of user.following) {
+                // console.log(`[bot.on /list logging user]: ${tu}\n\n`);
+                text += `- <b>${tu.name}</b> (<a href="${URL}/${tu.username}">@${tu.username}</a>)\n`;
+            }
         }
         bot.sendMessage(msg.from.id, text, {
             parseMode: "HTML",
             webPreview: false,
-        }).catch((err) => console.error(err));
+        }).catch((err) =>
+            console.log("[bot.on /list sending text ERROR] ", err)
+        );
     } catch (err) {
-        console.error(err);
+        console.log("[bot.on /list ERROR] ", err);
     }
 });
 
@@ -101,6 +107,13 @@ bot.on("text", async (msg) => {
 });
 
 bot.on(/^@/, async (msg) => {
+    if (!/^@?(\w){1,15}$/.test(msg.text)) {
+        bot.sendMessage(
+            msg.from.id,
+            `Username must contain only alphanumeric characters or underscores. And it must not exceed 15 characters.`
+        );
+        return;
+    }
     const checkUser = await UserHelper.find(msg.from.id);
     const user = checkUser.user;
 
@@ -121,16 +134,34 @@ bot.on(/^@/, async (msg) => {
     if (user.currentCommand === "follow") {
         // follow
         if (idx === -1) {
-            user.following.push(twitterUser.data.id);
-            await TwitterUserHelper.add(twitterUser.data);
-            bot.sendMessage(
-                msg.from.id,
-                `Followed <a href="${URL}/${handle}">@${handle}</a> ✅`,
-                {
-                    parseMode: "HTML",
-                    webPreview: false,
-                }
-            ).catch((err) => console.error(err));
+            // console.log(`[bot.on @ follow]\n${JSON.stringify(twitterUser)}`);
+            const isAdded = await TwitterUserHelper.add(twitterUser.data);
+            if (isAdded) {
+                user.following.push(twitterUser.data.id);
+                bot.sendMessage(
+                    msg.from.id,
+                    `Followed <a href="${URL}/${handle}">@${handle}</a> ✅`,
+                    {
+                        parseMode: "HTML",
+                        webPreview: false,
+                    }
+                ).catch((err) =>
+                    console.log("[bot.on @ following ERROR] ", err)
+                );
+            } else {
+                bot.sendMessage(
+                    msg.from.id,
+                    `Private account error ❌\n
+                    This account (<a href="${URL}/${handle}">@${handle}</a>) is private.
+                    You can only follow public accounts.`.replace(/  +/g, ""),
+                    {
+                        parseMode: "HTML",
+                        webPreview: false,
+                    }
+                ).catch((err) =>
+                    console.log("[bot.on @ following ERROR] ", err)
+                );
+            }
         } else {
             bot.sendMessage(
                 msg.from.id,
@@ -177,13 +208,13 @@ bot.on(/^@/, async (msg) => {
 
 bot.start();
 
-let i = 0;
-setInterval(async () => {
-    try {
-        await update(bot);
-        console.log(`${i}: updated`);
-        i++;
-    } catch (err) {
-        console.error(err);
-    }
-}, 10000);
+// let i = 0;
+// setInterval(async () => {
+//     try {
+//         await update(bot);
+// console.log(`${i}: updated`);
+//         i++;
+//     } catch (err) {
+//         console.log("[ERROR] ", err);
+//     }
+// }, 10000);

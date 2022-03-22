@@ -14,7 +14,8 @@ const add = async (tuser) => {
             return checkTwitterUser.user;
         }
     } catch (err) {
-        console.log(err.message);
+        console.log(`[titteruser.h.js add():]\n${err}`);
+        return null;
     }
 };
 

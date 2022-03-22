@@ -6,7 +6,7 @@ const URL = "https://twitter.com";
 // TODO: implement this in a better way.
 const update = async (bot) => {
     const tweets = await fetchTweets();
-    console.log(tweets);
+    // console.log(tweets);
     const users = await User.find().populate("following");
     for (let user of users) {
         for (let tu of user.following) {

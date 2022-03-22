@@ -11,6 +11,7 @@ const client = new TwitterApi(process.env.BEARER_TOKEN);
 const findTwitterUser = async (username) => {
     const user = await client.v2.usersByUsernames(username);
     if (user.errors) {
+        // TODO: handle this in a better way, it's too generic now
         return {
             found: false,
             data: null,
@@ -23,7 +24,7 @@ const findTwitterUser = async (username) => {
         try {
             ret.lastTweet = userTweets.tweets[0];
         } catch (err) {
-            console.log(err);
+            console.log(`[findTwitterUser] could not set lastTweet: ${err}`);
             ret.lastTweet = "None";
         }
         return {
@@ -36,6 +37,7 @@ const findTwitterUser = async (username) => {
 const fetchTweets = async () => {
     const ret = {};
     const accounts = await TwitterUser.find();
+    console.log(`[fetchTweets] TwitterUserList: ${accounts}`);
     for (let account of accounts) {
         ret[account._id] = [];
         let tweets = await client.v2.userTimeline(account._id, {
