@@ -1,7 +1,7 @@
 const { fetchTweets } = require("../helpers/twitter.h");
 const User = require("../models/User");
 
-async function update(bot) {
+const update = async (bot) => {
     const tweets = await fetchTweets();
     console.log(tweets);
     const users = await User.find().populate("following");
@@ -22,6 +22,6 @@ Link</a>`,
             }
         }
     }
-}
+};
 
 module.exports = update;
