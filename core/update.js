@@ -1,6 +1,9 @@
 const { fetchTweets } = require("../helpers/twitter.h");
 const User = require("../models/User");
 
+const URL = "https://twitter.com";
+
+// TODO: implement this in a better way.
 const update = async (bot) => {
     const tweets = await fetchTweets();
     console.log(tweets);
@@ -10,14 +13,16 @@ const update = async (bot) => {
             if (tu._id in tweets) {
                 tuTweets = tweets[tu._id];
                 for (let tweet of tuTweets) {
-                    await bot.sendMessage(
-                        user._id,
-                        `<b>${tu.name}</b> (<a
-                            href="https://twitter.com/${tu.username}">@${tu.username}</a>)\n\n${tweet.text}\n\n<a \
-href="https://twitter.com/${tu.username}/status/${tweet.id}">Tweet \
-Link</a>`,
-                        { parseMode: "HTML", webPreview: false }
+                    const text = `<b>${tu.name}</b> (<a 
+                            href="${URL}/${tu.username}">@${tu.username}</a>)\n\n${tweet.text}\n\n<a 
+                            href="${URL}/${tu.username}/status/${tweet.id}">Tweet Link</a>`.replace(
+                        /  +/g,
+                        ""
                     );
+                    await bot.sendMessage(user._id, text, {
+                        parseMode: "HTML",
+                        webPreview: false,
+                    });
                 }
             }
         }

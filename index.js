@@ -14,6 +14,8 @@ mongoose
     .then(() => console.log("Connected to database..."))
     .catch((err) => console.error(err));
 
+const URL = "https://twitter.com";
+const COMMANDS = ["/start", "/follow", "/unfollow", "/list", "/help"];
 const bot = new TeleBot(process.env.BOT_TOKEN);
 
 bot.on(["/start", "/help"], async (msg) => {
@@ -21,10 +23,10 @@ bot.on(["/start", "/help"], async (msg) => {
     bot.sendMessage(
         msg.from.id,
         `<b>Hello there!</b>\n
-Choose a command to do one of the following:\n
-/list - list the accounts you currently follow
-/follow - follow an account
-/unfollow - unfollow an account`,
+        Choose a command to do one of the following:\n
+        /list - list the accounts you currently follow
+        /follow - follow an account
+        /unfollow - unfollow an account`.replace(/  +/g, ""),
         { parseMode: "HTML" }
     );
 });
@@ -62,7 +64,7 @@ bot.on("/list", async (msg) => {
             text += `<b>None</b>`;
         }
         for (let tu of user.following) {
-            text += `- <b>${tu.name}</b> (<a href="https://twitter.com/${tu.username}">@${tu.username}</a>)\n`;
+            text += `- <b>${tu.name}</b> (<a href="${URL}/${tu.username}">@${tu.username}</a>)\n`;
         }
         bot.sendMessage(msg.from.id, text, {
             parseMode: "HTML",
@@ -77,12 +79,7 @@ bot.on("text", async (msg) => {
     const checkUser = await UserHelper.find(msg.from.id);
     const user = checkUser.user;
 
-    if (
-        ["/start", "/follow", "/unfollow", "/list", "/help"].includes(
-            msg.text
-        ) ||
-        msg.text[0] === "@"
-    ) {
+    if (COMMANDS.includes(msg.text) || msg.text[0] === "@") {
         return;
     }
     if (checkUser.found) {
@@ -128,7 +125,7 @@ bot.on(/^@/, async (msg) => {
             await TwitterUserHelper.add(twitterUser.data);
             bot.sendMessage(
                 msg.from.id,
-                `Followed <a href="https://twitter.com/${handle}">@${handle}</a> ✅`,
+                `Followed <a href="${URL}/${handle}">@${handle}</a> ✅`,
                 {
                     parseMode: "HTML",
                     webPreview: false,
@@ -137,7 +134,7 @@ bot.on(/^@/, async (msg) => {
         } else {
             bot.sendMessage(
                 msg.from.id,
-                `<a href="https://twitter.com/${handle}">@${handle}</a> is already followed`,
+                `<a href="${URL}/${handle}">@${handle}</a> is already followed`,
                 {
                     parseMode: "HTML",
                     webPreview: false,
@@ -152,7 +149,7 @@ bot.on(/^@/, async (msg) => {
             user.following.splice(idx, 1);
             bot.sendMessage(
                 msg.from.id,
-                `Unfollowed <a href="https://twitter.com/${handle}">@${handle}</a> ✅`,
+                `Unfollowed <a href="${URL}/${handle}">@${handle}</a> ✅`,
                 {
                     parseMode: "HTML",
                     webPreview: false,
@@ -161,7 +158,7 @@ bot.on(/^@/, async (msg) => {
         } else {
             bot.sendMessage(
                 msg.from.id,
-                `<a href="https://twitter.com/${handle}">@${handle}</a> is not in your following list`,
+                `<a href="${URL}/${handle}">@${handle}</a> is not in your following list`,
                 {
                     parseMode: "HTML",
                     webPreview: false,
@@ -179,9 +176,14 @@ bot.on(/^@/, async (msg) => {
 });
 
 bot.start();
+
 let i = 0;
-setInterval(() => {
-    update(bot);
-    console.log(`${i}: updated`);
-    i++;
-}, 30000);
+setInterval(async () => {
+    try {
+        await update(bot);
+        console.log(`${i}: updated`);
+        i++;
+    } catch (err) {
+        console.error(err);
+    }
+}, 10000);
