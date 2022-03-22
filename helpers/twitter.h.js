@@ -41,22 +41,20 @@ const fetchTweets = async () => {
         let tweets = await client.v2.userTimeline(account._id, {
             exclude: "replies",
         });
-        await tweets.fetchNext();
-        await tweets.fetchNext();
-        await tweets.fetchNext();
         tweets = tweets.tweets;
-        let found = false;
+        let found = 1;
         for (let tweet of tweets) {
             if (tweet.id === account.lastTweet) {
-                found = true;
+                found = 2;
                 account.lastTweet = tweets[0].id;
                 await account.save();
                 break;
             }
+            found = 3;
             ret[account._id].unshift(tweet);
         }
-        // TODO fix the case of long downtime
-        if (!found) {
+        // TODO: fix the case of long downtime
+        if (found === 3) {
             account.lastTweet = tweets[0].id;
             await account.save();
         }
