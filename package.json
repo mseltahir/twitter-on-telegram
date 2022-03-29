@@ -19,7 +19,6 @@
     },
     "homepage": "https://github.com/mseltahir/twitter-on-telegram#readme",
     "dependencies": {
-        "axios": "^0.26.1",
         "dotenv": "^16.0.0",
         "mongoose": "^6.2.7",
         "telebot": "^1.4.1",
@@ -27,5 +26,8 @@
     },
     "devDependencies": {
         "nodemon": "^2.0.15"
+    },
+    "engines": {
+        "node": "16.14.2"
     }
 }

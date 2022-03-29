@@ -4,7 +4,6 @@ const TeleBot = require("telebot");
 const UserHelper = require("./helpers/user.h");
 const TwitterUserHelper = require("./helpers/twitteruser.h");
 const { findTwitterUser } = require("./helpers/twitter.h");
-const TwitterUser = require("./models/TwitterUser");
 const User = require("./models/User");
 const update = require("./core/update");
 require("dotenv").config();
@@ -218,3 +217,4 @@ setInterval(async () => {
         console.log("[ERROR] ", err);
     }
 }, 300000);
+

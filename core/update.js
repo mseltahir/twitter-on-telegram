@@ -11,7 +11,7 @@ const update = async (bot) => {
     for (let user of users) {
         for (let tu of user.following) {
             if (tu._id in tweets) {
-                tuTweets = tweets[tu._id];
+                let tuTweets = tweets[tu._id];
                 for (let tweet of tuTweets) {
                     const text = `<b>${tu.name}</b> (<a 
                             href="${URL}/${tu.username}">@${tu.username}</a>)\n\n${tweet.text}\n\n<a 
